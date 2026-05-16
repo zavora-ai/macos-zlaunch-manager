@@ -117,6 +117,7 @@ func shell(_ command: String, _ arguments: [String]) -> (output: String, exitCod
     return (output, process.terminationStatus)
 }
 
+@discardableResult
 func shellPrivileged(_ command: String, _ arguments: [String]) -> (output: String, exitCode: Int32) {
     let args = arguments.map { $0.replacingOccurrences(of: "\"", with: "\\\"") }
     let argString = args.map { "\"\($0)\"" }.joined(separator: " ")
