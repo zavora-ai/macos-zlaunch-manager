@@ -634,3 +634,174 @@ struct Edit: ParsableCommand {
         process.waitUntilExit()
     }
 }
+
+
+// MARK: - GUI
+
+struct GUI: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Open the Launch Manager GUI app (installs if not found)"
+    )
+
+    @Flag(name: .long, help: "Force reinstall even if already installed")
+    var reinstall = false
+
+    func run() throws {
+        if !reinstall {
+            // Try to open existing installation
+            let appPaths = [
+                "/Applications/LaunchManager.app",
+                NSHomeDirectory() + "/Applications/LaunchManager.app",
+            ]
+
+            for path in appPaths {
+                if FileManager.default.fileExists(atPath: path) {
+                    print(colored("  Opening Launch Manager...", .cyan))
+                    shell("/usr/bin/open", [path])
+                    return
+                }
+            }
+
+            // Try by bundle ID
+            let (_, exitCode) = shell("/usr/bin/open", ["-b", "com.launchmanager.app"])
+            if exitCode == 0 {
+                print(colored("  Opening Launch Manager...", .cyan))
+                return
+            }
+        }
+
+        // Not installed — offer to install
+        print(colored("  Launch Manager.app not found.", .yellow))
+        print("")
+        print("  Install options:")
+        print("    1. Download from GitHub Releases (recommended)")
+        print("    2. Build from source")
+        print("")
+        print("  Select [1/2]: ", terminator: "")
+
+        guard let choice = readLine()?.trimmingCharacters(in: .whitespaces) else {
+            throw ExitCode.failure
+        }
+
+        switch choice {
+        case "1":
+            installFromRelease()
+        case "2":
+            try installFromSource()
+        default:
+            print(colored("  Cancelled.", .gray))
+        }
+    }
+
+    private func installFromRelease() {
+        print(colored("  Downloading latest release...", .cyan))
+
+        let dmgPath = "/tmp/LaunchManager-latest.dmg"
+        let (_, dlExit) = shell("/usr/bin/curl", [
+            "-L", "-o", dmgPath,
+            "https://github.com/zavora-ai/macos-launch-manager/releases/latest/download/LaunchManager-v1.1.0.dmg"
+        ])
+
+        guard dlExit == 0 else {
+            print(colored("  ✗ Download failed.", .red))
+            return
+        }
+
+        print(colored("  Mounting DMG...", .cyan))
+        let (_, _) = shell("/usr/bin/hdiutil", ["attach", dmgPath, "-nobrowse", "-quiet"])
+
+        // Find mount point
+        let mountPoint = "/Volumes/Launch Manager"
+        let appSource = "\(mountPoint)/LaunchManager.app"
+
+        guard FileManager.default.fileExists(atPath: appSource) else {
+            print(colored("  ✗ Could not find app in DMG.", .red))
+            shell("/usr/bin/hdiutil", ["detach", mountPoint])
+            return
+        }
+
+        print(colored("  Installing to /Applications...", .cyan))
+        // Remove old version if exists
+        try? FileManager.default.removeItem(atPath: "/Applications/LaunchManager.app")
+
+        do {
+            try FileManager.default.copyItem(atPath: appSource, toPath: "/Applications/LaunchManager.app")
+        } catch {
+            // Try with elevated privileges
+            print(colored("  Requires admin access...", .gray))
+            shellPrivileged("/bin/cp", ["-R", appSource, "/Applications/LaunchManager.app"])
+        }
+
+        // Unmount and clean up
+        shell("/usr/bin/hdiutil", ["detach", mountPoint, "-quiet"])
+        try? FileManager.default.removeItem(atPath: dmgPath)
+
+        // Remove quarantine
+        shell("/usr/bin/xattr", ["-cr", "/Applications/LaunchManager.app"])
+
+        if FileManager.default.fileExists(atPath: "/Applications/LaunchManager.app") {
+            print(colored("  ✓ Installed to /Applications/LaunchManager.app", .green))
+            print(colored("  Opening...", .cyan))
+            shell("/usr/bin/open", ["/Applications/LaunchManager.app"])
+        } else {
+            print(colored("  ✗ Installation failed.", .red))
+        }
+    }
+
+    private func installFromSource() throws {
+        let repoURL = "https://github.com/zavora-ai/macos-launch-manager.git"
+        let tempDir = "/tmp/lm-gui-build"
+
+        try? FileManager.default.removeItem(atPath: tempDir)
+
+        print(colored("  Cloning repository...", .cyan))
+        let (_, cloneExit) = shell("/usr/bin/git", ["clone", "--depth", "1", "--quiet", repoURL, tempDir])
+        guard cloneExit == 0 else {
+            print(colored("  ✗ Clone failed.", .red))
+            throw ExitCode.failure
+        }
+
+        print(colored("  Building (this may take a minute)...", .cyan))
+        let projectPath = "\(tempDir)/LaunchManager/LaunchManager.xcodeproj"
+        let (buildOutput, _) = shell("/usr/bin/xcodebuild", [
+            "-project", projectPath,
+            "-scheme", "LaunchManager",
+            "-configuration", "Release",
+            "-arch", "arm64", "-arch", "x86_64",
+            "ONLY_ACTIVE_ARCH=NO",
+            "CONFIGURATION_BUILD_DIR=\(tempDir)/build",
+            "build"
+        ])
+
+        let builtApp = "\(tempDir)/build/LaunchManager.app"
+        guard FileManager.default.fileExists(atPath: builtApp) else {
+            print(colored("  ✗ Build failed.", .red))
+            if buildOutput.contains("error:") {
+                let errors = buildOutput.components(separatedBy: "\n").filter { $0.contains("error:") }
+                for err in errors.prefix(3) { print("    \(err)") }
+            }
+            throw ExitCode.failure
+        }
+
+        print(colored("  Installing to /Applications...", .cyan))
+        try? FileManager.default.removeItem(atPath: "/Applications/LaunchManager.app")
+
+        do {
+            try FileManager.default.copyItem(atPath: builtApp, toPath: "/Applications/LaunchManager.app")
+        } catch {
+            shellPrivileged("/bin/cp", ["-R", builtApp, "/Applications/LaunchManager.app"])
+        }
+
+        // Clean up
+        try? FileManager.default.removeItem(atPath: tempDir)
+
+        if FileManager.default.fileExists(atPath: "/Applications/LaunchManager.app") {
+            print(colored("  ✓ Installed to /Applications/LaunchManager.app", .green))
+            print(colored("  Opening...", .cyan))
+            shell("/usr/bin/open", ["/Applications/LaunchManager.app"])
+        } else {
+            print(colored("  ✗ Installation failed.", .red))
+            throw ExitCode.failure
+        }
+    }
+}

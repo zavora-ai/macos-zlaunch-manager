@@ -22,6 +22,7 @@ struct LM: ParsableCommand {
             Create.self,
             Delete.self,
             Edit.self,
+            GUI.self,
         ],
         defaultSubcommand: List.self
     )
