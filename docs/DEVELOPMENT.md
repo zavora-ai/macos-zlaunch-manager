@@ -40,6 +40,15 @@ swift build              # Debug
 swift build -c release   # Release
 ```
 
+### MCP Server
+
+```bash
+cd mcp-server
+swift build              # Debug
+swift build -c release   # Release
+cp .build/release/lm-mcp-server /usr/local/bin/
+```
+
 ### DMG
 
 ```bash
@@ -136,6 +145,13 @@ Stable interface, no App Store rejection risk, well-documented, same commands us
 1. Add struct conforming to `ParsableCommand` in `Commands.swift`
 2. Register in `LM.subcommands` array in `LM.swift`
 3. Use `findService()` for label lookup, `shell()`/`shellPrivileged()` for execution
+
+### New MCP tool
+
+1. Add tool definition to `handleToolsList()` in `MCPServer.swift`
+2. Add case to `handleToolsCall()` switch
+3. Implement the method in `mcp-server/Sources/ServiceManager.swift`
+4. Return result as a string (MCP returns text content)
 
 ### New service action
 

@@ -146,6 +146,69 @@ For system services (global daemons, system agents/daemons), the CLI automatical
 
 ---
 
+## MCP Server
+
+The MCP server lets AI assistants manage launchd services directly.
+
+### Installation
+
+```bash
+cd mcp-server
+swift build -c release
+cp .build/release/lm-mcp-server /usr/local/bin/
+```
+
+### Configuration
+
+Add to your MCP client config:
+
+**Kiro** (`~/.kiro/settings/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "launchd": {
+      "command": "/usr/local/bin/lm-mcp-server",
+      "args": [],
+      "autoApprove": ["launchd_list", "launchd_status", "launchd_logs", "launchd_info", "launchd_plist_read"]
+    }
+  }
+}
+```
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "launchd": {
+      "command": "/usr/local/bin/lm-mcp-server"
+    }
+  }
+}
+```
+
+### What You Can Ask
+
+Once configured, your AI assistant can:
+
+- "List all running launchd services"
+- "What's the status of my adk-gateway service?"
+- "Stop com.zavora.adk-gateway"
+- "Show me the logs for yabai"
+- "Create a new service that runs my backup script every hour"
+- "Disable the Google updater from running at login"
+- "Read the plist for com.asmvik.yabai"
+- "Restart all my user agents"
+
+### Auto-Approved vs Manual Approval
+
+Read-only tools are safe to auto-approve:
+- `launchd_list`, `launchd_status`, `launchd_logs`, `launchd_info`, `launchd_plist_read`
+
+Write tools should require approval:
+- `launchd_start`, `launchd_stop`, `launchd_restart`, `launchd_load`, `launchd_unload`, `launchd_enable`, `launchd_disable`, `launchd_create`, `launchd_delete`, `launchd_plist_write`
+
+---
+
 ## Troubleshooting
 
 ### "Operation not permitted"

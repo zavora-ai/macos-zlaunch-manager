@@ -48,7 +48,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - DMG creation script with install instructions
   - Universal Binary build (Intel + Apple Silicon)
   - Code signing and notarization support
+  - GitHub Actions release workflow (auto-builds on tag push)
+  - Homebrew tap (`brew tap zavora-ai/tap && brew install lm`)
+  - One-liner install script
   - Apache 2.0 license
+
+- **MCP Server**
+  - JSON-RPC 2.0 over stdio (standard MCP transport)
+  - 15 tools covering full launchd lifecycle
+  - `launchd_list` — List services with filtering by domain/status/label
+  - `launchd_status` — Detailed service information
+  - `launchd_start/stop/restart` — Service lifecycle control
+  - `launchd_load/unload` — Bootstrap/bootout services
+  - `launchd_enable/disable` — Auto-load configuration
+  - `launchd_logs` — Read stdout/stderr log files
+  - `launchd_info` — Raw launchctl print output
+  - `launchd_create` — Create new service plists
+  - `launchd_delete` — Unload and remove services
+  - `launchd_plist_read/plist_write` — Read/write raw plist XML
+  - Zero external dependencies (pure Swift)
+  - Works with Kiro, Claude Desktop, and any MCP-compatible client
 
 ### Architecture
 

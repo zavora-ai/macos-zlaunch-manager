@@ -13,6 +13,7 @@ macOS uses `launchd` to manage all background services, but there's no built-in 
 
 - **GUI App** — Three-column SwiftUI interface for browsing, controlling, and configuring services
 - **CLI Tool (`lm`)** — Fast terminal interface for the same operations
+- **MCP Server** — Model Context Protocol server so AI assistants (Kiro, Claude Desktop) can manage launchd services
 
 ## Installation
 
@@ -56,6 +57,31 @@ cp .build/release/lm /usr/local/bin/lm
 ```
 
 Or download from [GitHub Releases](https://github.com/zavora-ai/macos-launch-manager/releases).
+
+### MCP Server
+
+```bash
+# Build and install
+cd mcp-server
+swift build -c release
+cp .build/release/lm-mcp-server /usr/local/bin/
+
+# Add to Kiro (~/.kiro/settings/mcp.json)
+```
+
+```json
+{
+  "mcpServers": {
+    "launchd": {
+      "command": "/usr/local/bin/lm-mcp-server",
+      "args": [],
+      "autoApprove": ["launchd_list", "launchd_status", "launchd_logs", "launchd_info", "launchd_plist_read"]
+    }
+  }
+}
+```
+
+For Claude Desktop, add to `~/Library/Application Support/Claude/claude_desktop_config.json`.
 
 ## CLI Usage
 
@@ -124,6 +150,66 @@ lm edit <label>                     # Open plist in $EDITOR
 ○ stopped    — Not loaded into launchd
 ```
 
+## MCP Server
+
+The MCP server exposes launchd management as tools for AI assistants. It implements the Model Context Protocol (JSON-RPC 2.0 over stdio).
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `launchd_list` | List services with domain/status/label filtering |
+| `launchd_status` | Detailed service info (PID, exit code, config) |
+| `launchd_start` | Start a service (auto-loads if needed) |
+| `launchd_stop` | Stop a service (SIGTERM or SIGKILL) |
+| `launchd_restart` | Restart a service |
+| `launchd_load` | Bootstrap a service into launchd |
+| `launchd_unload` | Bootout a service from launchd |
+| `launchd_enable` | Enable auto-load on boot/login |
+| `launchd_disable` | Disable auto-load |
+| `launchd_logs` | Read stdout/stderr log files |
+| `launchd_info` | Raw `launchctl print` output |
+| `launchd_create` | Create a new service plist |
+| `launchd_delete` | Unload and remove a service |
+| `launchd_plist_read` | Read raw XML plist content |
+| `launchd_plist_write` | Write/update plist content with validation |
+
+### Configuration
+
+**Kiro** (`~/.kiro/settings/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "launchd": {
+      "command": "/usr/local/bin/lm-mcp-server",
+      "args": [],
+      "autoApprove": ["launchd_list", "launchd_status", "launchd_logs", "launchd_info", "launchd_plist_read"]
+    }
+  }
+}
+```
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "launchd": {
+      "command": "/usr/local/bin/lm-mcp-server"
+    }
+  }
+}
+```
+
+### Example Prompts
+
+Once configured, you can ask your AI assistant:
+- "List all running launchd services"
+- "What's the status of my adk-gateway service?"
+- "Stop com.zavora.adk-gateway"
+- "Show me the logs for yabai"
+- "Create a new service that runs my backup script every hour"
+- "Disable the Google updater from running at login"
+
 ## GUI Features
 
 - **Three-column layout** — Sidebar domains → service list → detail view
@@ -146,7 +232,7 @@ macos-launch-manager/
 │   ├── LaunchManager.xcodeproj
 │   └── LaunchManager/
 │       ├── LaunchManagerApp.swift
-│       ├── ContentView.swift       # NavigationSplitView layout
+│       ├── ContentView.swift
 │       ├── Models/
 │       │   ├── LaunchdService.swift
 │       │   └── ServiceDomain.swift
@@ -166,11 +252,18 @@ macos-launch-manager/
 ├── cli/                            # CLI Tool (Swift Package)
 │   ├── Package.swift
 │   └── Sources/
-│       ├── LM.swift                # Entry point & subcommands
-│       ├── Commands.swift          # All command implementations
-│       └── Helpers.swift           # Domain, shell exec, ANSI colors
+│       ├── LM.swift
+│       ├── Commands.swift
+│       └── Helpers.swift
+├── mcp-server/                     # MCP Server (Swift Package)
+│   ├── Package.swift
+│   └── Sources/
+│       ├── main.swift
+│       ├── MCPServer.swift
+│       └── ServiceManager.swift
 ├── scripts/
-│   ├── create-dmg.sh              # Build & package DMG
+│   ├── create-dmg.sh
+│   ├── install.sh
 │   ├── generate-dmg-background.py
 │   └── dmg-background.png
 ├── docs/
@@ -178,6 +271,7 @@ macos-launch-manager/
 │   ├── USAGE.md
 │   ├── DEVELOPMENT.md
 │   └── CHANGELOG.md
+├── .github/workflows/release.yml
 ├── README.md
 ├── LICENSE
 └── .gitignore

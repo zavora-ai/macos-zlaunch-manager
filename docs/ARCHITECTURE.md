@@ -126,6 +126,28 @@ lm (ParsableCommand)
 └── edit    → findService() → exec $EDITOR on plist path
 ```
 
+## MCP Server Architecture
+
+The MCP server implements the Model Context Protocol (JSON-RPC 2.0 over stdio) to expose launchd management as tools for AI assistants.
+
+```
+stdin (JSON-RPC) → MCPServer.handleRequest()
+                 ├── initialize → return capabilities + server info
+                 ├── tools/list → return 15 tool definitions with schemas
+                 └── tools/call → route to ServiceManager method
+                                → execute launchctl commands
+                                → return text content
+                 → stdout (JSON-RPC response)
+```
+
+**Key design choices:**
+- Zero dependencies — pure Swift, no external packages
+- Single binary — compiles to one executable, easy to distribute
+- Stdio transport — standard MCP transport, works with any client
+- Read-only tools auto-approved — list, status, logs, info, plist_read
+- Write tools require approval — start, stop, create, delete, plist_write
+- Substring matching on labels — same as CLI, no need for exact labels
+
 ## launchctl Command Reference
 
 | Operation | Modern Command | Legacy Equivalent |
