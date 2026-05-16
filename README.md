@@ -11,6 +11,8 @@ A native macOS GUI + CLI for managing launchd services. Replaces the need to wre
 
 macOS uses `launchd` to manage all background services, but there's no built-in GUI for it (unlike Windows Services or Linux systemctl). Launch Manager fills that gap with:
 
+![Launch Manager Screenshot](docs/screenshot.png)
+
 - **GUI App** — Three-column SwiftUI interface for browsing, controlling, and configuring services
 - **CLI Tool (`lm`)** — Fast terminal interface for the same operations
 - **MCP Server** — Model Context Protocol server so AI assistants (Kiro, Claude Desktop) can manage launchd services
