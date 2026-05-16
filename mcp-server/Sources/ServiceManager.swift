@@ -190,7 +190,29 @@ class ServiceManager {
         let target = "\(domainTarget(svc.domain))/\(svc.label)"
 
         if !svc.isLoaded {
-            let _ = shell("/bin/launchctl", ["bootstrap", domainTarget(svc.domain), svc.plistPath])
+            // Check if disabled in launchd's override database
+            let disabledOutput = shell("/bin/launchctl", ["print-disabled", domainTarget(svc.domain)])
+            if disabledOutput.contains("\"\(svc.label)\" => disabled") {
+                let _ = shell("/bin/launchctl", ["enable", target])
+                Thread.sleep(forTimeInterval: 0.2)
+            }
+
+            let bootstrapResult = shell("/bin/launchctl", ["bootstrap", domainTarget(svc.domain), svc.plistPath])
+
+            // Handle "Bootstrap failed: 5: Input/output error" by enabling first
+            if bootstrapResult.contains("Input/output error") || bootstrapResult.contains("failed: 5") {
+                let _ = shell("/bin/launchctl", ["enable", target])
+                Thread.sleep(forTimeInterval: 0.2)
+                // Try bootout stale state then bootstrap again
+                let _ = shell("/bin/launchctl", ["bootout", target])
+                Thread.sleep(forTimeInterval: 0.3)
+                let retryResult = shell("/bin/launchctl", ["bootstrap", domainTarget(svc.domain), svc.plistPath])
+                if retryResult.contains("failed") {
+                    return "Error: Bootstrap failed after recovery attempt: \(retryResult.trimmingCharacters(in: .whitespacesAndNewlines))"
+                }
+            } else if bootstrapResult.contains("failed") && !bootstrapResult.contains("already loaded") {
+                return "Error: \(bootstrapResult.trimmingCharacters(in: .whitespacesAndNewlines))"
+            }
             Thread.sleep(forTimeInterval: 0.3)
         }
 
@@ -230,8 +252,32 @@ class ServiceManager {
 
     func load(label: String) -> String {
         guard let svc = findService(label) else { return "Error: Service not found: \(label)" }
+        let target = "\(domainTarget(svc.domain))/\(svc.label)"
+
+        // Check if disabled in launchd's override database and enable first
+        let disabledOutput = shell("/bin/launchctl", ["print-disabled", domainTarget(svc.domain)])
+        if disabledOutput.contains("\"\(svc.label)\" => disabled") {
+            let _ = shell("/bin/launchctl", ["enable", target])
+            Thread.sleep(forTimeInterval: 0.2)
+        }
+
         let result = shell("/bin/launchctl", ["bootstrap", domainTarget(svc.domain), svc.plistPath])
-        return result.isEmpty ? "Loaded \(svc.label)" : "Result: \(result.trimmingCharacters(in: .whitespacesAndNewlines))"
+
+        // Handle I/O error by clearing stale state
+        if result.contains("Input/output error") || result.contains("failed: 5") {
+            let _ = shell("/bin/launchctl", ["bootout", target])
+            Thread.sleep(forTimeInterval: 0.3)
+            let retryResult = shell("/bin/launchctl", ["bootstrap", domainTarget(svc.domain), svc.plistPath])
+            if retryResult.contains("failed") && !retryResult.contains("already loaded") {
+                return "Error: \(retryResult.trimmingCharacters(in: .whitespacesAndNewlines))"
+            }
+            return "Loaded \(svc.label) (recovered from stale state)"
+        }
+
+        if result.isEmpty || result.contains("already loaded") {
+            return "Loaded \(svc.label)"
+        }
+        return "Result: \(result.trimmingCharacters(in: .whitespacesAndNewlines))"
     }
 
     func unload(label: String) -> String {
@@ -377,5 +423,112 @@ class ServiceManager {
         } catch {
             return "Error: \(error.localizedDescription)"
         }
+    }
+}
+
+
+extension ServiceManager {
+
+    /// Force reload a service (bootout stale state, then bootstrap fresh)
+    func forceReload(label: String) -> String {
+        guard let svc = findService(label) else { return "Error: Service not found: \(label)" }
+        let target = "\(domainTarget(svc.domain))/\(svc.label)"
+
+        // Enable first in case it's in the disabled database
+        let _ = shell("/bin/launchctl", ["enable", target])
+
+        // Bootout any stale state (ignore errors if not loaded)
+        let _ = shell("/bin/launchctl", ["bootout", target])
+        Thread.sleep(forTimeInterval: 0.5)
+
+        // Bootstrap fresh
+        let result = shell("/bin/launchctl", ["bootstrap", domainTarget(svc.domain), svc.plistPath])
+        Thread.sleep(forTimeInterval: 0.5)
+
+        if result.contains("failed") && !result.contains("already loaded") {
+            return "Error: Force reload failed: \(result.trimmingCharacters(in: .whitespacesAndNewlines))"
+        }
+
+        // Verify
+        if let updated = findService(svc.label), updated.isLoaded {
+            if updated.isRunning {
+                return "Force reloaded \(svc.label) (PID: \(updated.pid ?? 0))"
+            }
+            return "Force reloaded \(svc.label) (loaded, not running)"
+        }
+        return "Force reloaded \(svc.label)"
+    }
+
+    /// Check the launchd disabled overrides database for a domain
+    func printDisabled(domain: String) -> String {
+        let target = domain == "all" ? domainTarget("user") : domainTarget(domain)
+        let output = shell("/bin/launchctl", ["print-disabled", target])
+
+        if output.isEmpty {
+            return "No disabled overrides found."
+        }
+
+        // Parse and format the output
+        var lines: [String] = []
+        lines.append("Disabled overrides for domain: \(target)")
+        lines.append(String(repeating: "-", count: 60))
+
+        for line in output.components(separatedBy: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.contains("=>") {
+                let parts = trimmed.components(separatedBy: "=>")
+                if parts.count == 2 {
+                    let label = parts[0].trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "\"", with: "")
+                    let state = parts[1].trimmingCharacters(in: .whitespaces)
+                    lines.append("\(label) => \(state)")
+                }
+            }
+        }
+
+        if lines.count <= 2 {
+            return "No disabled overrides found for \(target)."
+        }
+
+        return lines.joined(separator: "\n")
+    }
+
+    /// Get the true enabled/disabled state from launchd's override database (not just the plist)
+    func overrideStatus(label: String) -> String {
+        guard let svc = findService(label) else { return "Error: Service not found: \(label)" }
+        let target = domainTarget(svc.domain)
+
+        let output = shell("/bin/launchctl", ["print-disabled", target])
+        let plistDisabled = svc.disabled
+
+        var launchdDisabled: Bool? = nil
+        if output.contains("\"\(svc.label)\" => disabled") {
+            launchdDisabled = true
+        } else if output.contains("\"\(svc.label)\" => enabled") {
+            launchdDisabled = false
+        }
+
+        var lines: [String] = []
+        lines.append("Service: \(svc.label)")
+        lines.append("Plist Disabled key: \(plistDisabled ? "true" : "false")")
+
+        if let override = launchdDisabled {
+            lines.append("Launchd override database: \(override ? "disabled" : "enabled")")
+            if override && !plistDisabled {
+                lines.append("")
+                lines.append("⚠️  CONFLICT: Plist says enabled, but launchd override says disabled.")
+                lines.append("   The service will NOT load on boot/login.")
+                lines.append("   Fix: run `launchctl enable \(target)/\(svc.label)`")
+            } else if !override && plistDisabled {
+                lines.append("")
+                lines.append("ℹ️  Override active: Plist says disabled, but launchd override says enabled.")
+                lines.append("   The service WILL load on boot/login despite plist setting.")
+            }
+        } else {
+            lines.append("Launchd override database: no override (using plist value)")
+        }
+
+        lines.append("")
+        lines.append("Effective state: \((launchdDisabled ?? plistDisabled) ? "DISABLED" : "ENABLED")")
+        return lines.joined(separator: "\n")
     }
 }

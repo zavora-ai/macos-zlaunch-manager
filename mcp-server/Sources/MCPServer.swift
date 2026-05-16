@@ -200,6 +200,30 @@ class MCPServer {
                         "content": ["type": "string", "description": "Full XML plist content to write"]
                     ],
                     required: ["label", "content"]
+                ),
+                makeTool(
+                    name: "launchd_force_reload",
+                    description: "Force reload a service by clearing stale state (bootout + enable + bootstrap). Use when a service is stuck or bootstrap fails with I/O errors.",
+                    properties: [
+                        "label": ["type": "string", "description": "Service label to force reload"]
+                    ],
+                    required: ["label"]
+                ),
+                makeTool(
+                    name: "launchd_print_disabled",
+                    description: "Show the launchd disabled overrides database. This reveals services that are disabled at the system level (separate from the plist Disabled key).",
+                    properties: [
+                        "domain": ["type": "string", "description": "Domain to check: user, global-agents, global-daemons, system-agents, system-daemons (default: user)"]
+                    ],
+                    required: []
+                ),
+                makeTool(
+                    name: "launchd_override_status",
+                    description: "Check the true enabled/disabled state of a service by comparing the plist Disabled key against launchd's internal override database. Detects conflicts where plist says enabled but launchd override says disabled.",
+                    properties: [
+                        "label": ["type": "string", "description": "Service label to check"]
+                    ],
+                    required: ["label"]
                 )
             ]
         ]
@@ -260,6 +284,12 @@ class MCPServer {
             result = serviceManager.plistRead(label: arguments["label"] as? String ?? "")
         case "launchd_plist_write":
             result = serviceManager.plistWrite(label: arguments["label"] as? String ?? "", content: arguments["content"] as? String ?? "")
+        case "launchd_force_reload":
+            result = serviceManager.forceReload(label: arguments["label"] as? String ?? "")
+        case "launchd_print_disabled":
+            result = serviceManager.printDisabled(domain: arguments["domain"] as? String ?? "user")
+        case "launchd_override_status":
+            result = serviceManager.overrideStatus(label: arguments["label"] as? String ?? "")
         default:
             return makeError(id: nil, code: -32602, message: "Unknown tool: \(toolName)")
         }
