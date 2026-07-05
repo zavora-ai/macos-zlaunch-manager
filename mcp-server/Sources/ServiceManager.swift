@@ -535,7 +535,7 @@ extension ServiceManager {
 
 
 extension ServiceManager {
-    /// Open the Launch Manager GUI app
+    /// Open the ZLaunch Manager GUI app
     func openGUI() -> String {
         let appPaths = [
             "/Applications/ZLaunchManager.app",
@@ -545,14 +545,14 @@ extension ServiceManager {
         for path in appPaths {
             if fm.fileExists(atPath: path) {
                 let result = shell("/usr/bin/open", [path])
-                return result.isEmpty ? "Opened Launch Manager GUI" : "Error: \(result)"
+                return result.isEmpty ? "Opened ZLaunch Manager GUI" : "Error: \(result)"
             }
         }
 
         // Try by bundle ID
         let result = shell("/usr/bin/open", ["-b", "com.zavora.zlaunchmanager"])
         if !result.contains("Unable") && !result.contains("error") {
-            return "Opened Launch Manager GUI"
+            return "Opened ZLaunch Manager GUI"
         }
 
         return "ZLaunch Manager.app not found. Install with: zlm gui"

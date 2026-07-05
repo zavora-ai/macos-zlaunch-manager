@@ -12,7 +12,7 @@ ZLaunch Manager provides both a GUI and CLI interface for managing macOS launchd
 │                                                               │
 │   ┌─────────────────────┐     ┌─────────────────────────┐   │
 │   │   GUI (SwiftUI)      │     │   CLI (ArgumentParser)   │   │
-│   │   ZZLaunchManager.app  │     │   /usr/local/bin/zlm      │   │
+│   │   ZLaunchManager.app │     │   /usr/local/bin/zlm     │   │
 │   └──────────┬───────────┘     └────────────┬────────────┘   │
 ├──────────────┼──────────────────────────────┼────────────────┤
 │              │     Service Layer             │                 │

@@ -19,15 +19,15 @@ cd macos-zlaunch-manager
 
 ```bash
 # Debug (Xcode)
-open LaunchManager/ZZLaunchManager.xcodeproj
+open ZLaunchManager/ZLaunchManager.xcodeproj
 # ⌘R to build and run
 
 # Debug (command line)
-xcodebuild -project LaunchManager/ZZLaunchManager.xcodeproj \
+xcodebuild -project ZLaunchManager/ZLaunchManager.xcodeproj \
   -scheme ZLaunchManager -configuration Debug build
 
 # Release (Universal Binary)
-xcodebuild -project LaunchManager/ZZLaunchManager.xcodeproj \
+xcodebuild -project ZLaunchManager/ZLaunchManager.xcodeproj \
   -scheme ZLaunchManager -configuration Release \
   -arch arm64 -arch x86_64 ONLY_ACTIVE_ARCH=NO build
 ```
@@ -53,7 +53,7 @@ cp .build/release/zlm-mcp-server /usr/local/bin/
 
 ```bash
 ./scripts/create-dmg.sh
-# Output: build/LaunchManager-YYYY.MM.DD.dmg
+# Output: build/ZLaunchManager-YYYY.MM.DD.dmg
 ```
 
 ## Architecture
@@ -181,7 +181,7 @@ zlm delete com.test.launchmanager
 ### Verify universal binary
 
 ```bash
-file build/release/ZZLaunchManager.app/Contents/MacOS/LaunchManager
+file build/release/ZLaunchManager.app/Contents/MacOS/ZLaunchManager
 # Should show: Mach-O universal binary with 2 architectures: [x86_64] [arm64]
 ```
 
