@@ -55,8 +55,8 @@ class MCPServer {
                 "tools": [:]
             ],
             "serverInfo": [
-                "name": "lm-mcp-server",
-                "version": "1.1.0"
+                "name": "zlm-mcp-server",
+                "version": "1.2.0"
             ]
         ]
     }

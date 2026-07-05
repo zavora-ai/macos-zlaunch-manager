@@ -86,52 +86,52 @@ Both unload the service first, then remove the plist file. The detail view clear
 
 ---
 
-## CLI Tool (`lm`)
+## CLI Tool (`zlm`)
 
 ### Installation
 
 ```bash
 cd cli
 swift build -c release
-cp .build/release/lm /usr/local/bin/lm
+cp .build/release/zlm /usr/local/bin/zlm
 ```
 
 ### Quick Reference
 
 ```bash
 # Browse
-lm                          # List all services
-lm list -d user             # User agents only
-lm list --running           # Only running
-lm list -f nginx            # Search by name
-lm status com.my.service    # Detailed info
+zlm                          # List all services
+zlm list -d user             # User agents only
+zlm list --running           # Only running
+zlm list -f nginx            # Search by name
+zlm status com.my.service    # Detailed info
 
 # Control
-lm start <label>            # Start service
-lm stop <label>             # Stop service
-lm stop -f <label>          # Force kill
-lm restart <label>          # Restart
+zlm start <label>            # Start service
+zlm stop <label>             # Stop service
+zlm stop -f <label>          # Force kill
+zlm restart <label>          # Restart
 
 # Configuration
-lm load <label>             # Load into launchd
-lm unload <label>           # Remove from launchd
-lm enable <label>           # Auto-start on login
-lm disable <label>          # Prevent auto-start
+zlm load <label>             # Load into launchd
+zlm unload <label>           # Remove from launchd
+zlm enable <label>           # Auto-start on login
+zlm disable <label>          # Prevent auto-start
 
 # Logs & Info
-lm logs <label>             # View logs
-lm logs -f <label>          # Follow (tail -f)
-lm logs -l 500 <label>     # Last 500 lines
-lm info <label>             # launchctl print output
+zlm logs <label>             # View logs
+zlm logs -f <label>          # Follow (tail -f)
+zlm logs -l 500 <label>     # Last 500 lines
+zlm info <label>             # launchctl print output
 
 # Manage
-lm create com.co.svc -p /path/to/bin --run-at-load
-lm delete <label>           # Remove service
-lm edit <label>             # Open plist in $EDITOR
+zlm create com.co.svc -p /path/to/bin --run-at-load
+zlm delete <label>           # Remove service
+zlm edit <label>             # Open plist in $EDITOR
 
 # GUI
-lm gui                      # Open GUI app (installs if needed)
-lm gui --reinstall          # Force reinstall from GitHub
+zlm gui                      # Open GUI app (installs if needed)
+zlm gui --reinstall          # Force reinstall from GitHub
 ```
 
 ### Label Matching
@@ -139,9 +139,9 @@ lm gui --reinstall          # Force reinstall from GitHub
 The CLI uses substring matching — you don't need the full label:
 
 ```bash
-lm status yabai             # Matches com.asmvik.yabai
-lm logs gateway             # Matches com.zavora.adk-gateway
-lm stop docker              # Matches com.docker.helper
+zlm status yabai             # Matches com.asmvik.yabai
+zlm logs gateway             # Matches com.zavora.adk-gateway
+zlm stop docker              # Matches com.docker.helper
 ```
 
 ### Privilege Escalation
@@ -159,7 +159,7 @@ The MCP server lets AI assistants manage launchd services directly.
 ```bash
 cd mcp-server
 swift build -c release
-cp .build/release/lm-mcp-server /usr/local/bin/
+cp .build/release/zlm-mcp-server /usr/local/bin/
 ```
 
 ### Configuration
@@ -171,7 +171,7 @@ Add to your MCP client config:
 {
   "mcpServers": {
     "launchd": {
-      "command": "/usr/local/bin/lm-mcp-server",
+      "command": "/usr/local/bin/zlm-mcp-server",
       "args": [],
       "autoApprove": ["launchd_list", "launchd_status", "launchd_logs", "launchd_info", "launchd_plist_read"]
     }
@@ -184,7 +184,7 @@ Add to your MCP client config:
 {
   "mcpServers": {
     "launchd": {
-      "command": "/usr/local/bin/lm-mcp-server"
+      "command": "/usr/local/bin/zlm-mcp-server"
     }
   }
 }
@@ -221,9 +221,9 @@ Some system services are protected by SIP. This is expected — you cannot contr
 
 ### Service won't start
 
-1. Check if it's loaded: `lm status <label>`
-2. If not loaded: `lm load <label>` first
-3. Check logs: `lm logs <label>`
+1. Check if it's loaded: `zlm status <label>`
+2. If not loaded: `zlm load <label>` first
+3. Check logs: `zlm logs <label>`
 4. Verify the executable exists and is executable
 
 ### GUI shows stale data
@@ -234,8 +234,8 @@ Press ⌘R to refresh. The app doesn't auto-refresh by default to avoid unnecess
 
 Clear saved window state:
 ```bash
-defaults delete com.launchmanager.app
-rm -rf ~/Library/Saved\ Application\ State/com.launchmanager.app.savedState
+defaults delete com.zavora.zlaunchmanager
+rm -rf ~/Library/Saved\ Application\ State/com.zavora.zlaunchmanager.savedState
 ```
 
 ### CLI not found after install

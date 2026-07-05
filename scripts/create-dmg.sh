@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # create-dmg.sh
-# Builds a release .dmg for Launch Manager
+# Builds a release .dmg for ZLaunch Manager
 #
 # Usage: ./scripts/create-dmg.sh
 #
@@ -15,11 +15,11 @@
 set -e
 
 # Configuration
-APP_NAME="LaunchManager"
-BUNDLE_ID="com.launchmanager.app"
+APP_NAME="ZLaunchManager"
+BUNDLE_ID="com.zavora.zlaunchmanager"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-XCODE_PROJECT="$PROJECT_DIR/LaunchManager/LaunchManager.xcodeproj"
+XCODE_PROJECT="$PROJECT_DIR/ZLaunchManager/ZLaunchManager.xcodeproj"
 BUILD_DIR="$PROJECT_DIR/build"
 DMG_DIR="$BUILD_DIR/dmg"
 RELEASE_DIR="$BUILD_DIR/release"
@@ -36,7 +36,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║     Launch Manager — DMG Builder         ║${NC}"
+echo -e "${BLUE}║     ZLaunch Manager — DMG Builder         ║${NC}"
 echo -e "${BLUE}║     Zavora Technologies Ltd              ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════╝${NC}"
 echo ""
@@ -86,20 +86,20 @@ ln -sf /Applications "$DMG_DIR/Applications"
 # Add a visible README with install instructions
 cat > "$DMG_DIR/Install Instructions.txt" << 'INSTRUCTIONS'
 ╔══════════════════════════════════════════════════════════╗
-║              Launch Manager — Installation               ║
+║              ZLaunch Manager — Installation               ║
 ╚══════════════════════════════════════════════════════════╝
 
   INSTALL:
-    Drag "LaunchManager.app" → "Applications" folder
+    Drag "ZLaunchManager.app" → "Applications" folder
 
   FIRST RUN:
     If macOS shows "unidentified developer" warning:
-    1. Right-click LaunchManager.app
+    1. Right-click ZLaunchManager.app
     2. Select "Open"
     3. Click "Open" in the dialog
 
   WHAT IT DOES:
-    Launch Manager provides a native GUI for managing
+    ZLaunch Manager provides a native GUI for managing
     macOS launchd services (agents and daemons).
 
     • View all launchd services across all domains
@@ -112,7 +112,7 @@ cat > "$DMG_DIR/Install Instructions.txt" << 'INSTRUCTIONS'
     • macOS 14.0 (Sonoma) or later
 
   UNINSTALL:
-    Drag LaunchManager from Applications to Trash.
+    Drag ZLaunchManager from Applications to Trash.
 
 ──────────────────────────────────────────────────────────
   © 2024-2026 Zavora Technologies Ltd
@@ -133,14 +133,14 @@ fi
 # Create a DS_Store to configure the DMG window appearance
 # We'll create a temporary writable DMG, configure it, then convert
 
-DMG_NAME="LaunchManager-${VERSION}.dmg"
+DMG_NAME="ZLaunchManager-${VERSION}.dmg"
 DMG_PATH="$BUILD_DIR/$DMG_NAME"
 TEMP_DMG="$BUILD_DIR/tmp.dmg"
 
 echo -e "${YELLOW}[5/5]${NC} Creating DMG: $DMG_NAME"
 
 # Create compressed DMG directly (skip Finder customization for reliability)
-hdiutil create -volname "Launch Manager" \
+hdiutil create -volname "ZLaunch Manager" \
     -srcfolder "$DMG_DIR" \
     -ov -format UDZO \
     -imagekey zlib-level=9 \
@@ -176,7 +176,7 @@ echo -e "  ${BLUE}File:${NC}    $DMG_PATH"
 echo -e "  ${BLUE}Size:${NC}    $DMG_SIZE"
 echo -e "  ${BLUE}Version:${NC} $VERSION"
 echo ""
-echo -e "  ${YELLOW}To install:${NC} Open the DMG and drag Launch Manager → Applications"
+echo -e "  ${YELLOW}To install:${NC} Open the DMG and drag ZLaunch Manager → Applications"
 echo ""
 echo -e "  ${YELLOW}For distribution:${NC}"
 echo -e "    export DEVELOPER_ID=\"Your Name (TEAMID)\""

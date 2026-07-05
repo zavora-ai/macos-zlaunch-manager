@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct LaunchManagerApp: App {
+struct ZLaunchManagerApp: App {
     @State private var serviceManager = ServiceManager()
 
     var body: some Scene {

@@ -15,20 +15,20 @@ jobs:
         run: |
           cd cli
           swift build -c release --arch arm64 --arch x86_64
-          file .build/apple/Products/Release/lm
+          file .build/apple/Products/Release/zlm
 
       - name: Package binary
         run: |
           mkdir -p dist
-          cp cli/.build/apple/Products/Release/lm dist/lm
+          cp cli/.build/apple/Products/Release/zlm dist/zlm
           cd dist
-          tar -czf lm-${{ github.ref_name }}-macos-universal.tar.gz lm
-          shasum -a 256 lm-${{ github.ref_name }}-macos-universal.tar.gz > checksums.txt
+          tar -czf zlm-${{ github.ref_name }}-macos-universal.tar.gz zlm
+          shasum -a 256 zlm-${{ github.ref_name }}-macos-universal.tar.gz > checksums.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lm-binary
+          name: zlm-binary
           path: dist/
 
   build-app:
@@ -38,8 +38,8 @@ jobs:
 
       - name: Build GUI App (Universal Binary)
         run: |
-          xcodebuild -project LaunchManager/LaunchManager.xcodeproj \
-            -scheme LaunchManager \
+          xcodebuild -project ZLaunchManager/ZLaunchManager.xcodeproj \
+            -scheme ZLaunchManager \
             -configuration Release \
             -arch arm64 -arch x86_64 \
             ONLY_ACTIVE_ARCH=NO \
@@ -49,19 +49,19 @@ jobs:
       - name: Create DMG
         run: |
           mkdir -p build/dmg
-          cp -R build/release/LaunchManager.app build/dmg/
+          cp -R build/release/ZLaunchManager.app build/dmg/
           ln -sf /Applications build/dmg/Applications
-          hdiutil create -volname "Launch Manager" \
+          hdiutil create -volname "ZLaunch Manager" \
             -srcfolder build/dmg \
             -ov -format UDZO \
             -imagekey zlib-level=9 \
-            build/LaunchManager-${{ github.ref_name }}.dmg
+            build/ZLaunchManager-${{ github.ref_name }}.dmg
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
           name: dmg
-          path: build/LaunchManager-*.dmg
+          path: build/ZLaunchManager-*.dmg
 
   release:
     needs: [build-cli, build-app]
@@ -75,27 +75,27 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            lm-binary/lm-*-macos-universal.tar.gz
-            lm-binary/checksums.txt
-            dmg/LaunchManager-*.dmg
+            zlm-binary/zlm-*-macos-universal.tar.gz
+            zlm-binary/checksums.txt
+            dmg/ZLaunchManager-*.dmg
           body: |
             ## Install
 
             ### CLI (one-liner)
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/zavora-ai/macos-launch-manager/main/scripts/install.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/zavora-ai/macos-zlaunch-manager/main/scripts/install.sh | bash
             ```
 
             ### CLI (Homebrew)
             ```bash
-            brew install zavora-ai/tap/lm
+            brew install zavora-ai/tap/zlm
             ```
 
             ### CLI (manual binary)
             ```bash
-            curl -L https://github.com/zavora-ai/macos-launch-manager/releases/download/${{ github.ref_name }}/lm-${{ github.ref_name }}-macos-universal.tar.gz | tar xz
-            sudo mv lm /usr/local/bin/
+            curl -L https://github.com/zavora-ai/macos-zlaunch-manager/releases/download/${{ github.ref_name }}/zlm-${{ github.ref_name }}-macos-universal.tar.gz | tar xz
+            sudo mv zlm /usr/local/bin/
             ```
 
             ### GUI App
-            Download `LaunchManager-${{ github.ref_name }}.dmg`, open it, drag to Applications.
+            Download `ZLaunchManager-${{ github.ref_name }}.dmg`, open it, drag to Applications.

@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-05
+
+### Changed
+
+- **Renamed the product to ZLaunch Manager** to avoid a naming collision with the
+  independently developed [LaunchManager](https://github.com/Sean10000/LaunchManager)
+  by Shi-Cheng Ma, whose project and public design docs predate this repository.
+  - Repository: `macos-launch-manager` → `macos-zlaunch-manager`
+  - GUI app: `LaunchManager` → `ZLaunch Manager` (bundle `com.zavora.zlaunchmanager`)
+  - CLI: `lm` → `zlm`
+  - MCP server: `lm-mcp-server` → `zlm-mcp-server`
+  - Homebrew formula: `lm` → `zlm` (`brew install zavora-ai/tap/zlm`)
+- Added a **Related Projects** section to the README acknowledging LaunchManager.
+
 ## [1.1.0] - 2026-05-16
 
 ### Added
@@ -26,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Detects "Bootstrap failed: 5: Input/output error" and auto-recovers (enable → bootout stale → retry)
 
 - **Distribution:**
-  - Homebrew tap (`brew tap zavora-ai/tap && brew install lm`)
+  - Homebrew tap (`brew tap zavora-ai/tap && brew install zlm`)
   - One-liner install script
   - GitHub Actions release workflow with pre-built universal binaries
   - GitHub Release with DMG + CLI binary assets
@@ -63,17 +77,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Detail view resets properly when switching services
   - Universal Binary (arm64 + x86_64)
 
-- **CLI Tool (`lm`)**
-  - `lm list` — List services with color-coded status indicators
-  - `lm status` — Detailed service information
-  - `lm start/stop/restart` — Service lifecycle control
-  - `lm load/unload` — Bootstrap/bootout services
-  - `lm enable/disable` — Auto-load configuration
-  - `lm logs` — View stdout/stderr with follow mode
-  - `lm info` — Raw launchctl print output
-  - `lm create` — Create new services from command line
-  - `lm delete` — Unload and remove services
-  - `lm edit` — Open plist in $EDITOR
+- **CLI Tool (`zlm`)**
+  - `zlm list` — List services with color-coded status indicators
+  - `zlm status` — Detailed service information
+  - `zlm start/stop/restart` — Service lifecycle control
+  - `zlm load/unload` — Bootstrap/bootout services
+  - `zlm enable/disable` — Auto-load configuration
+  - `zlm logs` — View stdout/stderr with follow mode
+  - `zlm info` — Raw launchctl print output
+  - `zlm create` — Create new services from command line
+  - `zlm delete` — Unload and remove services
+  - `zlm edit` — Open plist in $EDITOR
   - Domain filtering (`-d user`, `-d global-daemons`, etc.)
   - Substring search for service labels
   - ANSI color output
@@ -84,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Universal Binary build (Intel + Apple Silicon)
   - Code signing and notarization support
   - GitHub Actions release workflow (auto-builds on tag push)
-  - Homebrew tap (`brew tap zavora-ai/tap && brew install lm`)
+  - Homebrew tap (`brew tap zavora-ai/tap && brew install zlm`)
   - One-liner install script
   - Apache 2.0 license
 

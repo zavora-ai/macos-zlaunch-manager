@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# install.sh — Quick installer for lm (Launch Manager CLI)
+# install.sh — Quick installer for zlm (ZLaunch Manager CLI)
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/zavora-ai/macos-launch-manager/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/zavora-ai/macos-zlaunch-manager/main/scripts/install.sh | bash
 #
 # Or manually:
-#   git clone https://github.com/zavora-ai/macos-launch-manager.git
-#   cd macos-launch-manager/cli && swift build -c release
-#   cp .build/release/lm /usr/local/bin/lm
+#   git clone https://github.com/zavora-ai/macos-zlaunch-manager.git
+#   cd macos-zlaunch-manager/cli && swift build -c release
+#   cp .build/release/zlm /usr/local/bin/zlm
 #
 # Copyright 2024-2026 Zavora Technologies Ltd
 # Apache License 2.0
@@ -24,7 +24,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   lm — Launch Manager CLI Installer  ║${NC}"
+echo -e "${BLUE}║   zlm — ZLaunch Manager CLI Installer ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
 echo ""
 
@@ -43,52 +43,53 @@ fi
 
 INSTALL_DIR="/usr/local/bin"
 TEMP_DIR=$(mktemp -d)
-REPO_URL="https://github.com/zavora-ai/macos-launch-manager.git"
+REPO_URL="https://github.com/zavora-ai/macos-zlaunch-manager.git"
 
 # Check if already installed
-if command -v lm &> /dev/null; then
-    CURRENT_VERSION=$(lm --version 2>/dev/null || echo "unknown")
-    echo -e "${YELLOW}  lm is already installed (${CURRENT_VERSION})${NC}"
+if command -v zlm &> /dev/null; then
+    CURRENT_VERSION=$(zlm --version 2>/dev/null || echo "unknown")
+    echo -e "${YELLOW}  zlm is already installed (${CURRENT_VERSION})${NC}"
     echo -e "  Reinstalling..."
     echo ""
 fi
 
 # Clone and build
 echo -e "${YELLOW}[1/3]${NC} Downloading source..."
-git clone --depth 1 --quiet "$REPO_URL" "$TEMP_DIR/macos-launch-manager" 2>/dev/null
+git clone --depth 1 --quiet "$REPO_URL" "$TEMP_DIR/macos-zlaunch-manager" 2>/dev/null
 
 echo -e "${YELLOW}[2/3]${NC} Building (this may take a minute)..."
-cd "$TEMP_DIR/macos-launch-manager/cli"
+cd "$TEMP_DIR/macos-zlaunch-manager/cli"
 swift build -c release --quiet 2>/dev/null
 
 echo -e "${YELLOW}[3/3]${NC} Installing to ${INSTALL_DIR}..."
 if [[ -w "$INSTALL_DIR" ]]; then
-    cp ".build/release/lm" "$INSTALL_DIR/lm"
+    cp ".build/release/zlm" "$INSTALL_DIR/zlm"
 else
-    sudo cp ".build/release/lm" "$INSTALL_DIR/lm"
+    sudo cp ".build/release/zlm" "$INSTALL_DIR/zlm"
 fi
 
 # Cleanup
 rm -rf "$TEMP_DIR"
 
 # Verify
-if command -v lm &> /dev/null; then
-    VERSION=$(lm --version 2>/dev/null || echo "1.0.0")
+if command -v zlm &> /dev/null; then
+    VERSION=$(zlm --version 2>/dev/null || echo "1.2.0")
     echo ""
-    echo -e "${GREEN}✓ Installed lm ${VERSION} to ${INSTALL_DIR}/lm${NC}"
+    echo -e "${GREEN}✓ Installed zlm ${VERSION} to ${INSTALL_DIR}/zlm${NC}"
     echo ""
     echo -e "  Get started:"
-    echo -e "    ${BLUE}lm${NC}                    List all services"
-    echo -e "    ${BLUE}lm list -d user${NC}       List user agents"
-    echo -e "    ${BLUE}lm list --running${NC}     Show running services"
-    echo -e "    ${BLUE}lm status <label>${NC}     Service details"
-    echo -e "    ${BLUE}lm start <label>${NC}      Start a service"
-    echo -e "    ${BLUE}lm --help${NC}             Full help"
+    echo -e "    ${BLUE}zlm${NC}                    List all services"
+    echo -e "    ${BLUE}zlm list -d user${NC}       List user agents"
+    echo -e "    ${BLUE}zlm list --running${NC}     Show running services"
+    echo -e "    ${BLUE}zlm status <label>${NC}     Service details"
+    echo -e "    ${BLUE}zlm start <label>${NC}      Start a service"
+    echo -e "    ${BLUE}zlm gui${NC}                Open the GUI app"
+    echo -e "    ${BLUE}zlm --help${NC}             Full help"
     echo ""
 else
     echo -e "${RED}✗ Installation failed. Try manually:${NC}"
     echo "  git clone $REPO_URL"
-    echo "  cd macos-launch-manager/cli && swift build -c release"
-    echo "  cp .build/release/lm /usr/local/bin/lm"
+    echo "  cd macos-zlaunch-manager/cli && swift build -c release"
+    echo "  cp .build/release/zlm /usr/local/bin/zlm"
     exit 1
 fi

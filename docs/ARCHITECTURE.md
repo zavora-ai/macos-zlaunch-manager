@@ -2,7 +2,7 @@
 
 ## Overview
 
-Launch Manager provides both a GUI and CLI interface for managing macOS launchd services. Both share the same underlying approach: scan plist directories for service definitions, query `launchctl` for runtime status, and execute `launchctl` subcommands for lifecycle management.
+ZLaunch Manager provides both a GUI and CLI interface for managing macOS launchd services. Both share the same underlying approach: scan plist directories for service definitions, query `launchctl` for runtime status, and execute `launchctl` subcommands for lifecycle management.
 
 ## System Architecture
 
@@ -12,7 +12,7 @@ Launch Manager provides both a GUI and CLI interface for managing macOS launchd 
 │                                                               │
 │   ┌─────────────────────┐     ┌─────────────────────────┐   │
 │   │   GUI (SwiftUI)      │     │   CLI (ArgumentParser)   │   │
-│   │   LaunchManager.app  │     │   /usr/local/bin/lm      │   │
+│   │   ZZLaunchManager.app  │     │   /usr/local/bin/zlm      │   │
 │   └──────────┬───────────┘     └────────────┬────────────┘   │
 ├──────────────┼──────────────────────────────┼────────────────┤
 │              │     Service Layer             │                 │
@@ -85,7 +85,7 @@ System-owned services under `/System/Library/` are protected by SIP and displaye
 ## GUI Component Architecture
 
 ```
-LaunchManagerApp (@main)
+ZLaunchManagerApp (@main)
 └── ContentView
     └── NavigationSplitView
         ├── sidebar: SidebarView
@@ -109,7 +109,7 @@ LaunchManagerApp (@main)
 ## CLI Command Architecture
 
 ```
-lm (ParsableCommand)
+zlm (ParsableCommand)
 ├── list    → discoverAllServices() → updateStatuses() → formatted table
 ├── status  → findService() → formatted detail
 ├── start   → findService() → bootstrap (if needed) → kickstart

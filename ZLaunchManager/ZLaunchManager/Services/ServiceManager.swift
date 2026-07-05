@@ -154,7 +154,7 @@ class ServiceManager {
             } else {
                 loadResult = await runCommand("/bin/launchctl", arguments: ["bootstrap", domainTarget, service.plistPath])
             }
-            print("[LaunchManager] bootstrap: \(loadResult)")
+            print("[ZLaunchManager] bootstrap: \(loadResult)")
             try? await Task.sleep(nanoseconds: 300_000_000)
         }
 
@@ -165,7 +165,7 @@ class ServiceManager {
         } else {
             result = await runCommand("/bin/launchctl", arguments: ["kickstart", "-kp", serviceTarget])
         }
-        print("[LaunchManager] kickstart: \(result)")
+        print("[ZLaunchManager] kickstart: \(result)")
 
         try? await Task.sleep(nanoseconds: 500_000_000)
         await refreshService(service)
@@ -184,7 +184,7 @@ class ServiceManager {
         } else {
             result = await runCommand("/bin/launchctl", arguments: ["kill", "SIGTERM", serviceTarget])
         }
-        print("[LaunchManager] kill SIGTERM: \(result)")
+        print("[ZLaunchManager] kill SIGTERM: \(result)")
 
         // Give it a moment to stop
         try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -198,7 +198,7 @@ class ServiceManager {
             } else {
                 killResult = await runCommand("/bin/launchctl", arguments: ["kill", "SIGKILL", serviceTarget])
             }
-            print("[LaunchManager] kill SIGKILL: \(killResult)")
+            print("[ZLaunchManager] kill SIGKILL: \(killResult)")
             try? await Task.sleep(nanoseconds: 500_000_000)
             await refreshService(service)
         }
@@ -216,7 +216,7 @@ class ServiceManager {
         } else {
             result = await runCommand("/bin/launchctl", arguments: ["bootstrap", domainTarget, service.plistPath])
         }
-        print("[LaunchManager] bootstrap: \(result)")
+        print("[ZLaunchManager] bootstrap: \(result)")
 
         try? await Task.sleep(nanoseconds: 500_000_000)
         await refreshService(service)
@@ -234,7 +234,7 @@ class ServiceManager {
         } else {
             result = await runCommand("/bin/launchctl", arguments: ["bootout", serviceTarget])
         }
-        print("[LaunchManager] bootout: \(result)")
+        print("[ZLaunchManager] bootout: \(result)")
 
         try? await Task.sleep(nanoseconds: 500_000_000)
         await refreshService(service)
@@ -252,7 +252,7 @@ class ServiceManager {
         } else {
             result = await runCommand("/bin/launchctl", arguments: ["enable", serviceTarget])
         }
-        print("[LaunchManager] enable: \(result)")
+        print("[ZLaunchManager] enable: \(result)")
 
         service.disabled = false
         return true
@@ -269,7 +269,7 @@ class ServiceManager {
         } else {
             result = await runCommand("/bin/launchctl", arguments: ["disable", serviceTarget])
         }
-        print("[LaunchManager] disable: \(result)")
+        print("[ZLaunchManager] disable: \(result)")
 
         service.disabled = true
         return true

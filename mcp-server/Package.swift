@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "lm-mcp-server",
+    name: "zlm-mcp-server",
     platforms: [.macOS(.v14)],
     dependencies: [],
     targets: [
         .executableTarget(
-            name: "lm-mcp-server",
+            name: "zlm-mcp-server",
             path: "Sources"
         ),
     ]

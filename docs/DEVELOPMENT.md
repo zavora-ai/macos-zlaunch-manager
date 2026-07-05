@@ -9,8 +9,8 @@
 ## Project Setup
 
 ```bash
-git clone https://github.com/zavora-ai/macos-launch-manager.git
-cd macos-launch-manager
+git clone https://github.com/zavora-ai/macos-zlaunch-manager.git
+cd macos-zlaunch-manager
 ```
 
 ## Building
@@ -19,16 +19,16 @@ cd macos-launch-manager
 
 ```bash
 # Debug (Xcode)
-open LaunchManager/LaunchManager.xcodeproj
+open LaunchManager/ZZLaunchManager.xcodeproj
 # ⌘R to build and run
 
 # Debug (command line)
-xcodebuild -project LaunchManager/LaunchManager.xcodeproj \
-  -scheme LaunchManager -configuration Debug build
+xcodebuild -project LaunchManager/ZZLaunchManager.xcodeproj \
+  -scheme ZLaunchManager -configuration Debug build
 
 # Release (Universal Binary)
-xcodebuild -project LaunchManager/LaunchManager.xcodeproj \
-  -scheme LaunchManager -configuration Release \
+xcodebuild -project LaunchManager/ZZLaunchManager.xcodeproj \
+  -scheme ZLaunchManager -configuration Release \
   -arch arm64 -arch x86_64 ONLY_ACTIVE_ARCH=NO build
 ```
 
@@ -46,7 +46,7 @@ swift build -c release   # Release
 cd mcp-server
 swift build              # Debug
 swift build -c release   # Release
-cp .build/release/lm-mcp-server /usr/local/bin/
+cp .build/release/zlm-mcp-server /usr/local/bin/
 ```
 
 ### DMG
@@ -130,7 +130,7 @@ Stable interface, no App Store rejection risk, well-documented, same commands us
 
 ### Substring Matching in CLI
 
-`lm status yabai` finds `com.asmvik.yabai` — saves typing full reverse-DNS labels.
+`zlm status yabai` finds `com.asmvik.yabai` — saves typing full reverse-DNS labels.
 
 ## Adding Features
 
@@ -165,23 +165,23 @@ Stable interface, no App Store rejection risk, well-documented, same commands us
 ### Manual test service
 
 ```bash
-lm create com.test.launchmanager \
+zlm create com.test.launchmanager \
   -p /bin/bash \
   --args "-c,echo hello >> /tmp/lm-test.log" \
   --run-at-load \
   --stdout /tmp/lm-test.stdout.log \
   --stderr /tmp/lm-test.stderr.log
 
-lm load com.test.launchmanager
-lm start com.test.launchmanager
-lm logs com.test.launchmanager
-lm delete com.test.launchmanager
+zlm load com.test.launchmanager
+zlm start com.test.launchmanager
+zlm logs com.test.launchmanager
+zlm delete com.test.launchmanager
 ```
 
 ### Verify universal binary
 
 ```bash
-file build/release/LaunchManager.app/Contents/MacOS/LaunchManager
+file build/release/ZZLaunchManager.app/Contents/MacOS/LaunchManager
 # Should show: Mach-O universal binary with 2 architectures: [x86_64] [arm64]
 ```
 

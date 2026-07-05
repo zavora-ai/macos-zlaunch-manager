@@ -545,7 +545,7 @@ struct Create: ParsableCommand {
         }
 
         print(colored("  ✓ Created \(filePath)", .green))
-        print(colored("  Run `lm load \(label)` to load it", .gray))
+        print(colored("  Run `zlm load \(label)` to load it", .gray))
     }
 }
 
@@ -640,7 +640,7 @@ struct Edit: ParsableCommand {
 
 struct GUI: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Open the Launch Manager GUI app (installs if not found)"
+        abstract: "Open the ZLaunch Manager GUI app (installs if not found)"
     )
 
     @Flag(name: .long, help: "Force reinstall even if already installed")
@@ -650,28 +650,28 @@ struct GUI: ParsableCommand {
         if !reinstall {
             // Try to open existing installation
             let appPaths = [
-                "/Applications/LaunchManager.app",
-                NSHomeDirectory() + "/Applications/LaunchManager.app",
+                "/Applications/ZLaunchManager.app",
+                NSHomeDirectory() + "/Applications/ZLaunchManager.app",
             ]
 
             for path in appPaths {
                 if FileManager.default.fileExists(atPath: path) {
-                    print(colored("  Opening Launch Manager...", .cyan))
+                    print(colored("  Opening ZLaunch Manager...", .cyan))
                     shell("/usr/bin/open", [path])
                     return
                 }
             }
 
             // Try by bundle ID
-            let (_, exitCode) = shell("/usr/bin/open", ["-b", "com.launchmanager.app"])
+            let (_, exitCode) = shell("/usr/bin/open", ["-b", "com.zavora.zlaunchmanager"])
             if exitCode == 0 {
-                print(colored("  Opening Launch Manager...", .cyan))
+                print(colored("  Opening ZLaunch Manager...", .cyan))
                 return
             }
         }
 
         // Not installed — offer to install
-        print(colored("  Launch Manager.app not found.", .yellow))
+        print(colored("  ZLaunch Manager.app not found.", .yellow))
         print("")
         print("  Install options:")
         print("    1. Download from GitHub Releases (recommended)")
@@ -696,10 +696,10 @@ struct GUI: ParsableCommand {
     private func installFromRelease() {
         print(colored("  Downloading latest release...", .cyan))
 
-        let dmgPath = "/tmp/LaunchManager-latest.dmg"
+        let dmgPath = "/tmp/ZLaunchManager-latest.dmg"
         let (_, dlExit) = shell("/usr/bin/curl", [
             "-L", "-o", dmgPath,
-            "https://github.com/zavora-ai/macos-launch-manager/releases/latest/download/LaunchManager-v1.1.0.dmg"
+            "https://github.com/zavora-ai/macos-zlaunch-manager/releases/latest/download/ZLaunchManager-v1.2.0.dmg"
         ])
 
         guard dlExit == 0 else {
@@ -711,8 +711,8 @@ struct GUI: ParsableCommand {
         let (_, _) = shell("/usr/bin/hdiutil", ["attach", dmgPath, "-nobrowse", "-quiet"])
 
         // Find mount point
-        let mountPoint = "/Volumes/Launch Manager"
-        let appSource = "\(mountPoint)/LaunchManager.app"
+        let mountPoint = "/Volumes/ZLaunch Manager"
+        let appSource = "\(mountPoint)/ZLaunchManager.app"
 
         guard FileManager.default.fileExists(atPath: appSource) else {
             print(colored("  ✗ Could not find app in DMG.", .red))
@@ -722,14 +722,14 @@ struct GUI: ParsableCommand {
 
         print(colored("  Installing to /Applications...", .cyan))
         // Remove old version if exists
-        try? FileManager.default.removeItem(atPath: "/Applications/LaunchManager.app")
+        try? FileManager.default.removeItem(atPath: "/Applications/ZLaunchManager.app")
 
         do {
-            try FileManager.default.copyItem(atPath: appSource, toPath: "/Applications/LaunchManager.app")
+            try FileManager.default.copyItem(atPath: appSource, toPath: "/Applications/ZLaunchManager.app")
         } catch {
             // Try with elevated privileges
             print(colored("  Requires admin access...", .gray))
-            shellPrivileged("/bin/cp", ["-R", appSource, "/Applications/LaunchManager.app"])
+            shellPrivileged("/bin/cp", ["-R", appSource, "/Applications/ZLaunchManager.app"])
         }
 
         // Unmount and clean up
@@ -737,19 +737,19 @@ struct GUI: ParsableCommand {
         try? FileManager.default.removeItem(atPath: dmgPath)
 
         // Remove quarantine
-        shell("/usr/bin/xattr", ["-cr", "/Applications/LaunchManager.app"])
+        shell("/usr/bin/xattr", ["-cr", "/Applications/ZLaunchManager.app"])
 
-        if FileManager.default.fileExists(atPath: "/Applications/LaunchManager.app") {
-            print(colored("  ✓ Installed to /Applications/LaunchManager.app", .green))
+        if FileManager.default.fileExists(atPath: "/Applications/ZLaunchManager.app") {
+            print(colored("  ✓ Installed to /Applications/ZLaunchManager.app", .green))
             print(colored("  Opening...", .cyan))
-            shell("/usr/bin/open", ["/Applications/LaunchManager.app"])
+            shell("/usr/bin/open", ["/Applications/ZLaunchManager.app"])
         } else {
             print(colored("  ✗ Installation failed.", .red))
         }
     }
 
     private func installFromSource() throws {
-        let repoURL = "https://github.com/zavora-ai/macos-launch-manager.git"
+        let repoURL = "https://github.com/zavora-ai/macos-zlaunch-manager.git"
         let tempDir = "/tmp/lm-gui-build"
 
         try? FileManager.default.removeItem(atPath: tempDir)
@@ -762,10 +762,10 @@ struct GUI: ParsableCommand {
         }
 
         print(colored("  Building (this may take a minute)...", .cyan))
-        let projectPath = "\(tempDir)/LaunchManager/LaunchManager.xcodeproj"
+        let projectPath = "\(tempDir)/ZLaunchManager/ZLaunchManager.xcodeproj"
         let (buildOutput, _) = shell("/usr/bin/xcodebuild", [
             "-project", projectPath,
-            "-scheme", "LaunchManager",
+            "-scheme", "ZLaunchManager",
             "-configuration", "Release",
             "-arch", "arm64", "-arch", "x86_64",
             "ONLY_ACTIVE_ARCH=NO",
@@ -773,7 +773,7 @@ struct GUI: ParsableCommand {
             "build"
         ])
 
-        let builtApp = "\(tempDir)/build/LaunchManager.app"
+        let builtApp = "\(tempDir)/build/ZLaunchManager.app"
         guard FileManager.default.fileExists(atPath: builtApp) else {
             print(colored("  ✗ Build failed.", .red))
             if buildOutput.contains("error:") {
@@ -784,21 +784,21 @@ struct GUI: ParsableCommand {
         }
 
         print(colored("  Installing to /Applications...", .cyan))
-        try? FileManager.default.removeItem(atPath: "/Applications/LaunchManager.app")
+        try? FileManager.default.removeItem(atPath: "/Applications/ZLaunchManager.app")
 
         do {
-            try FileManager.default.copyItem(atPath: builtApp, toPath: "/Applications/LaunchManager.app")
+            try FileManager.default.copyItem(atPath: builtApp, toPath: "/Applications/ZLaunchManager.app")
         } catch {
-            shellPrivileged("/bin/cp", ["-R", builtApp, "/Applications/LaunchManager.app"])
+            shellPrivileged("/bin/cp", ["-R", builtApp, "/Applications/ZLaunchManager.app"])
         }
 
         // Clean up
         try? FileManager.default.removeItem(atPath: tempDir)
 
-        if FileManager.default.fileExists(atPath: "/Applications/LaunchManager.app") {
-            print(colored("  ✓ Installed to /Applications/LaunchManager.app", .green))
+        if FileManager.default.fileExists(atPath: "/Applications/ZLaunchManager.app") {
+            print(colored("  ✓ Installed to /Applications/ZLaunchManager.app", .green))
             print(colored("  Opening...", .cyan))
-            shell("/usr/bin/open", ["/Applications/LaunchManager.app"])
+            shell("/usr/bin/open", ["/Applications/ZLaunchManager.app"])
         } else {
             print(colored("  ✗ Installation failed.", .red))
             throw ExitCode.failure

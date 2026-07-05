@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "lm",
+    name: "zlm",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
     ],
     targets: [
         .executableTarget(
-            name: "lm",
+            name: "zlm",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],

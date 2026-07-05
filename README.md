@@ -1,4 +1,4 @@
-# macOS Launch Manager
+# macOS ZLaunch Manager
 
 A native macOS GUI + CLI for managing launchd services. Replaces the need to wrestle with `launchctl` commands and plist files directly.
 
@@ -9,12 +9,12 @@ A native macOS GUI + CLI for managing launchd services. Replaces the need to wre
 
 ## What It Does
 
-macOS uses `launchd` to manage all background services, but there's no built-in GUI for it (unlike Windows Services or Linux systemctl). Launch Manager fills that gap with:
+macOS uses `launchd` to manage all background services, but there's no built-in GUI for it (unlike Windows Services or Linux systemctl). ZLaunch Manager fills that gap with:
 
-![Launch Manager Screenshot](docs/screenshot.png)
+![ZLaunch Manager Screenshot](docs/screenshot.png)
 
 - **GUI App** — Three-column SwiftUI interface for browsing, controlling, and configuring services
-- **CLI Tool (`lm`)** — Fast terminal interface for the same operations
+- **CLI Tool (`zlm`)** — Fast terminal interface for the same operations
 - **MCP Server** — Model Context Protocol server so AI assistants (Kiro, Claude Desktop) can manage launchd services
 
 ## Installation
@@ -22,31 +22,31 @@ macOS uses `launchd` to manage all background services, but there's no built-in 
 ### CLI — One-liner (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zavora-ai/macos-launch-manager/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zavora-ai/macos-zlaunch-manager/main/scripts/install.sh | bash
 ```
 
 ### CLI — Homebrew
 
 ```bash
 brew tap zavora-ai/tap
-brew install lm
+brew install zlm
 ```
 
 ### CLI — Download binary
 
 ```bash
 # From GitHub Releases (no Swift/Xcode needed)
-curl -L https://github.com/zavora-ai/macos-launch-manager/releases/latest/download/lm-v1.0.0-macos-universal.tar.gz | tar xz
-sudo mv lm /usr/local/bin/
+curl -L https://github.com/zavora-ai/macos-zlaunch-manager/releases/latest/download/zlm-v1.2.0-macos-universal.tar.gz | tar xz
+sudo mv zlm /usr/local/bin/
 ```
 
 ### CLI — Build from source
 
 ```bash
-git clone https://github.com/zavora-ai/macos-launch-manager.git
-cd macos-launch-manager/cli
+git clone https://github.com/zavora-ai/macos-zlaunch-manager.git
+cd macos-zlaunch-manager/cli
 swift build -c release
-cp .build/release/lm /usr/local/bin/lm
+cp .build/release/zlm /usr/local/bin/zlm
 ```
 
 ### GUI App — DMG
@@ -54,11 +54,11 @@ cp .build/release/lm /usr/local/bin/lm
 ```bash
 # Build locally
 ./scripts/create-dmg.sh
-# Output: build/LaunchManager-YYYY.MM.DD.dmg
+# Output: build/ZLaunchManager-YYYY.MM.DD.dmg
 # Open DMG → drag to Applications
 ```
 
-Or download from [GitHub Releases](https://github.com/zavora-ai/macos-launch-manager/releases).
+Or download from [GitHub Releases](https://github.com/zavora-ai/macos-zlaunch-manager/releases).
 
 ### MCP Server
 
@@ -66,7 +66,7 @@ Or download from [GitHub Releases](https://github.com/zavora-ai/macos-launch-man
 # Build and install
 cd mcp-server
 swift build -c release
-cp .build/release/lm-mcp-server /usr/local/bin/
+cp .build/release/zlm-mcp-server /usr/local/bin/
 
 # Add to Kiro (~/.kiro/settings/mcp.json)
 ```
@@ -75,7 +75,7 @@ cp .build/release/lm-mcp-server /usr/local/bin/
 {
   "mcpServers": {
     "launchd": {
-      "command": "/usr/local/bin/lm-mcp-server",
+      "command": "/usr/local/bin/zlm-mcp-server",
       "args": [],
       "autoApprove": ["launchd_list", "launchd_status", "launchd_logs", "launchd_info", "launchd_plist_read"]
     }
@@ -87,54 +87,54 @@ For Claude Desktop, add to `~/Library/Application Support/Claude/claude_desktop_
 
 ## CLI Usage
 
-The `lm` command provides full service management from the terminal:
+The `zlm` command provides full service management from the terminal:
 
 ```bash
 # List services
-lm                                  # All services (default)
-lm list -d user                     # User agents only
-lm list -d global-daemons           # Global daemons only
-lm list --running                   # Only running services
-lm list --loaded                    # Only loaded services
-lm list -f docker                   # Filter by name substring
+zlm                                  # All services (default)
+zlm list -d user                     # User agents only
+zlm list -d global-daemons           # Global daemons only
+zlm list --running                   # Only running services
+zlm list --loaded                    # Only loaded services
+zlm list -f docker                   # Filter by name substring
 
 # Service info
-lm status <label>                   # Detailed status
-lm info <label>                     # Raw launchctl print output
-lm logs <label>                     # View stdout/stderr logs
-lm logs -f <label>                  # Follow logs (tail -f)
-lm logs -l 200 <label>             # Last 200 lines
+zlm status <label>                   # Detailed status
+zlm info <label>                     # Raw launchctl print output
+zlm logs <label>                     # View stdout/stderr logs
+zlm logs -f <label>                  # Follow logs (tail -f)
+zlm logs -l 200 <label>             # Last 200 lines
 
 # Control services
-lm start <label>                    # Start (auto-loads if needed)
-lm stop <label>                     # Stop (SIGTERM)
-lm stop -f <label>                  # Force kill (SIGKILL)
-lm restart <label>                  # Stop + start
+zlm start <label>                    # Start (auto-loads if needed)
+zlm stop <label>                     # Stop (SIGTERM)
+zlm stop -f <label>                  # Force kill (SIGKILL)
+zlm restart <label>                  # Stop + start
 
 # Load/unload
-lm load <label>                     # Bootstrap into launchd
-lm unload <label>                   # Bootout from launchd
+zlm load <label>                     # Bootstrap into launchd
+zlm unload <label>                   # Bootout from launchd
 
 # Enable/disable
-lm enable <label>                   # Auto-load on boot/login
-lm disable <label>                  # Prevent auto-load
+zlm enable <label>                   # Auto-load on boot/login
+zlm disable <label>                  # Prevent auto-load
 
 # Create/delete
-lm create com.company.myservice \
+zlm create com.company.myservice \
     -p /usr/local/bin/myapp \
     --run-at-load --keep-alive \
     --stdout /tmp/myservice.log \
     --stderr /tmp/myservice.err
 
-lm delete <label>                   # Unload + remove plist
-lm delete -y <label>               # Skip confirmation
+zlm delete <label>                   # Unload + remove plist
+zlm delete -y <label>               # Skip confirmation
 
 # Edit
-lm edit <label>                     # Open plist in $EDITOR
+zlm edit <label>                     # Open plist in $EDITOR
 
 # GUI
-lm gui                              # Open GUI app (installs if not found)
-lm gui --reinstall                  # Force reinstall GUI from GitHub
+zlm gui                              # Open GUI app (installs if not found)
+zlm gui --reinstall                  # Force reinstall GUI from GitHub
 ```
 
 ### Domains
@@ -182,7 +182,7 @@ The MCP server exposes launchd management as tools for AI assistants. It impleme
 | `launchd_force_reload` | Clear stale state and reload (bootout + enable + bootstrap) |
 | `launchd_print_disabled` | Query launchd's internal disabled overrides database |
 | `launchd_override_status` | Detect conflicts between plist and launchd override state |
-| `launchd_open_gui` | Open the Launch Manager GUI app |
+| `launchd_open_gui` | Open the ZLaunch Manager GUI app |
 
 ### Configuration
 
@@ -191,7 +191,7 @@ The MCP server exposes launchd management as tools for AI assistants. It impleme
 {
   "mcpServers": {
     "launchd": {
-      "command": "/usr/local/bin/lm-mcp-server",
+      "command": "/usr/local/bin/zlm-mcp-server",
       "args": [],
       "autoApprove": ["launchd_list", "launchd_status", "launchd_logs", "launchd_info", "launchd_plist_read"]
     }
@@ -204,7 +204,7 @@ The MCP server exposes launchd management as tools for AI assistants. It impleme
 {
   "mcpServers": {
     "launchd": {
-      "command": "/usr/local/bin/lm-mcp-server"
+      "command": "/usr/local/bin/zlm-mcp-server"
     }
   }
 }
@@ -221,7 +221,7 @@ Once configured, you can ask your AI assistant:
 - "Disable the Google updater from running at login"
 - "Force reload the adk-gateway service — it's stuck"
 - "Check if any services have conflicting disabled states"
-- "Open the Launch Manager GUI"
+- "Open the ZLaunch Manager GUI"
 
 ## GUI Features
 
@@ -240,11 +240,11 @@ Once configured, you can ask your AI assistant:
 ## Project Structure
 
 ```
-macos-launch-manager/
-├── LaunchManager/                  # GUI App (SwiftUI)
-│   ├── LaunchManager.xcodeproj
-│   └── LaunchManager/
-│       ├── LaunchManagerApp.swift
+macos-zlaunch-manager/
+├── ZLaunchManager/                  # GUI App (SwiftUI)
+│   ├── ZLaunchManager.xcodeproj
+│   └── ZLaunchManager/
+│       ├── ZLaunchManagerApp.swift
 │       ├── ContentView.swift
 │       ├── Models/
 │       │   ├── LaunchdService.swift
@@ -321,7 +321,7 @@ For system-level operations requiring root, the GUI uses AppleScript `with admin
 
 ```bash
 ./scripts/create-dmg.sh
-# Recipients bypass Gatekeeper with: xattr -cr /Applications/LaunchManager.app
+# Recipients bypass Gatekeeper with: xattr -cr /Applications/ZLaunchManager.app
 ```
 
 ### Signed + Notarized (public distribution)
@@ -342,6 +342,14 @@ export APPLE_TEAM_ID="YOUR_TEAM_ID"
 - Destructive actions require confirmation
 - Privileged operations prompt via standard macOS auth dialog
 - Universal Binary (arm64 + x86_64)
+
+## Related Projects
+
+- **[LaunchManager](https://github.com/Sean10000/LaunchManager)** by Shi-Cheng Ma ([launchmanager.dev](https://www.launchmanager.dev/)) — an independently developed macOS launchd manager whose project and public design documents predate this repository. ZLaunch Manager was built independently, but because launchd constrains the solution space heavily, the two share a similar feature set and idiomatic macOS UI patterns. We renamed our project from "LaunchManager" to "ZLaunch Manager" to avoid confusion, since theirs came first. If you're comparing options, check out their project too.
+
+Other launchd tools worth knowing:
+- [LaunchControl](https://www.soma-zone.com/LaunchControl/) — mature commercial launchd GUI
+- [glowinthedark/pylaunchd](https://github.com/glowinthedark/pylaunchd) — Python launchd GUI
 
 ## Contributing
 
