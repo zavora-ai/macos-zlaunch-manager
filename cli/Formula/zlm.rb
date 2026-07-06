@@ -2,10 +2,15 @@
 # Install: brew install zavora-ai/tap/zlm
 
 class Zlm < Formula
-  desc "macOS launchd service manager - CLI interface"
+  desc "ZLaunch Manager - macOS launchd service manager CLI"
   homepage "https://github.com/zavora-ai/macos-zlaunch-manager"
-  url "https://github.com/zavora-ai/macos-zlaunch-manager/archive/refs/tags/v1.2.0.tar.gz"
-  sha256 "5aa61ae51428e7c35d8eee0248a669421fa4ea949f216cc959757d194aa44d29"
+  # Use git tag + revision instead of the auto-generated source tarball.
+  # GitHub's archive/refs/tags/*.tar.gz files are NOT guaranteed to be
+  # byte-stable over time, which causes intermittent brew checksum
+  # mismatches. A pinned git revision is reproducible and immune to that.
+  url "https://github.com/zavora-ai/macos-zlaunch-manager.git",
+      tag:      "v1.2.0",
+      revision: "c1e77c6e045a07dc5bfaa4bba0fadc740480d7b5"
   license "Apache-2.0"
   head "https://github.com/zavora-ai/macos-zlaunch-manager.git", branch: "main"
 
