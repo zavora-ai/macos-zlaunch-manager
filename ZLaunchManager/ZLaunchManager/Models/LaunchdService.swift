@@ -13,6 +13,7 @@ class LaunchdService: Identifiable, Hashable {
     var lastExitStatus: Int? = nil
     var isLoaded: Bool = false
     var isRunning: Bool { pid != nil && pid != 0 }
+    var isModifiedButNotYetReloaded: Bool = false
 
     // Plist properties
     var program: String? = nil

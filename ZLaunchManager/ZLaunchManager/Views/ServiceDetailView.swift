@@ -86,6 +86,12 @@ struct ServiceDetailView: View {
                             .font(.caption)
                             .foregroundStyle(exit == 0 ? .green : .orange)
                     }
+                    
+                    if service.isModifiedButNotYetReloaded {
+                        Label("Needs reload", systemImage: "exclamationmark.triangle")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
                 }
             }
 
@@ -142,6 +148,9 @@ struct ServiceDetailView: View {
                 if service.isLoaded {
                     Button("Unload") {
                         performAction { let _ = await serviceManager.unloadService(service) }
+                    }
+                    Button("Reload") {
+                        performAction { let _ = await serviceManager.reloadService(service) }
                     }
                 } else {
                     Button("Load") {
