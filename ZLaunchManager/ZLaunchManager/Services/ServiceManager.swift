@@ -240,6 +240,16 @@ class ServiceManager {
         await refreshService(service)
         return !service.isLoaded
     }
+    
+    /// Unload and load a service
+    func reloadService(_ service: LaunchdService) async -> Bool {
+        if !service.isLoaded {
+            return await loadService(service)
+        }
+        
+        await unloadService(service)
+        return await loadService(service)
+    }
 
     /// Enable a service (mark it to load on boot/login)
     func enableService(_ service: LaunchdService) async -> Bool {

@@ -102,6 +102,9 @@ struct PlistEditorView: View {
             Button("Cancel", role: .cancel) {}
             Button("Save") {
                 savePlist()
+                if service.isLoaded {
+                    service.isModifiedButNotYetReloaded = true
+                }
             }
         } message: {
             if service.isLoaded {

@@ -216,10 +216,18 @@ struct ServiceContextMenu: View {
             Button("Unload") {
                 Task { await serviceManager.unloadService(service) }
             }
+            Button("Reload") {
+                Task {
+                    await serviceManager.unloadService(service)
+                    await serviceManager.loadService(service)
+                    service.isModifiedButNotYetReloaded = false
+                }
+            }
         } else {
             Button("Load") {
                 Task { await serviceManager.loadService(service) }
             }
+
         }
 
         Divider()
